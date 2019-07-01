@@ -28,6 +28,7 @@ import com.smarttable.matrix.MatrixHelper;
 import com.smarttable.utils.DensityUtils;
 
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -172,6 +173,26 @@ public class SmartTable<T> extends View implements OnTableChangeListener {
         if (tableData != null) {
             tableDataAtomic.set(tableData);
             notifyDataChanged();
+        }
+    }
+
+    public void updateData(List<T> data) {
+        if (tableDataAtomic.get() == null) {
+            return;
+        }
+        TableData<T> tableData = tableDataAtomic.get();
+        tableData.getT().clear();
+        ((CopyOnWriteArrayList<T>)(tableData.getT())).addAllAbsent(data);
+        parser.sort(tableData);
+        for (Column childColumn : tableData.getChildColumns()) {
+            try {
+                childColumn.getDatas().clear();
+                childColumn.fillData(tableData.getT());
+            } catch (NoSuchFieldException e) {
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
         }
     }
 

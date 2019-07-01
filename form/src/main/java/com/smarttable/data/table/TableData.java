@@ -42,17 +42,14 @@ public class TableData<T> {
     private OnRowLongClickListener<T> onRowLongClickListener;
     private OnColumnClickListener<?> onColumnClickListener;
 
-
     public TableData(String tableName, List<T> t, List<Column> columns) {
         this(tableName, t, columns, null);
 
     }
 
-
     public TableData(String tableName, List<T> t, Column... columns) {
         this(tableName, t, Arrays.asList(columns));
     }
-
 
     public TableData(String tableName, List<T> t, List<Column> columns, ITitleDrawFormat titleDrawFormat) {
         this.tableName = tableName;
@@ -63,32 +60,26 @@ public class TableData<T> {
         this.titleDrawFormat = titleDrawFormat == null ? new TitleDrawFormat() : titleDrawFormat;
     }
 
-
     public String getTableName() {
         return tableName;
     }
-
 
     public void setTableName(String tableName) {
         this.tableName = tableName;
     }
 
-
     public List<Column> getColumns() {
         return columns;
     }
-
 
     public void setColumns(List<Column> columns) {
         this.columns.clear();
         this.columns.addAllAbsent(columns);
     }
 
-
     public List<T> getT() {
         return t;
     }
-
 
     public void setT(List<T> t) {
         this.t.clear();
@@ -96,79 +87,64 @@ public class TableData<T> {
         tableInfo.setLineSize(t.size());
     }
 
-
     public List<Column> getChildColumns() {
         return childColumns;
     }
-
 
     public TableInfo getTableInfo() {
         return tableInfo;
     }
 
-
     public void setTableInfo(TableInfo tableInfo) {
         this.tableInfo = tableInfo;
     }
-
 
     public List<ColumnInfo> getColumnInfos() {
         return columnInfos;
     }
 
-
     public List<ColumnInfo> getChildColumnInfos() {
         return childColumnInfos;
     }
-
 
     public void setChildColumnInfos(List<ColumnInfo> childColumnInfos) {
         this.childColumnInfos.clear();
         this.childColumnInfos.addAllAbsent(childColumnInfos);
     }
 
-
     public void setColumnInfos(List<ColumnInfo> columnInfos) {
         this.columnInfos.clear();
         this.columnInfos.addAllAbsent(columnInfos);
     }
-
 
     public void setChildColumns(List<Column> childColumns) {
         this.childColumns.clear();
         this.childColumns.addAllAbsent(childColumns);
     }
 
-
     public Column getSortColumn() {
         return sortColumn;
     }
-
 
     public void setSortColumn(Column sortColumn) {
         this.sortColumn = sortColumn;
     }
 
-
     public boolean isShowCount() {
         return showCount;
     }
-
 
     public void setShowCount(boolean showCount) {
         this.showCount = showCount;
     }
 
-
     public ITitleDrawFormat getTitleDrawFormat() {
         return titleDrawFormat;
     }
 
-
     public void setTitleDrawFormat(ITitleDrawFormat titleDrawFormat) {
         this.titleDrawFormat = titleDrawFormat;
     }
-
 
     public ISequenceFormat getXSequenceFormat() {
         if (XSequenceFormat == null) {
@@ -177,11 +153,9 @@ public class TableData<T> {
         return XSequenceFormat;
     }
 
-
     public void setXSequenceFormat(ISequenceFormat XSequenceFormat) {
         this.XSequenceFormat = XSequenceFormat;
     }
-
 
     public ISequenceFormat getYSequenceFormat() {
         if (YSequenceFormat == null) {
@@ -190,11 +164,9 @@ public class TableData<T> {
         return YSequenceFormat;
     }
 
-
     public void setYSequenceFormat(ISequenceFormat YSequenceFormat) {
         this.YSequenceFormat = YSequenceFormat;
     }
-
 
     public Column getColumnByID(int id) {
         List<Column> columns = getChildColumns();
@@ -206,7 +178,6 @@ public class TableData<T> {
         return null;
     }
 
-
     public Column getColumnByFieldName(String fieldName) {
         List<Column> columns = getChildColumns();
         for (Column column : columns) {
@@ -216,7 +187,6 @@ public class TableData<T> {
         }
         return null;
     }
-
 
     public int getLineSize() {
         return tableInfo.getLineHeightArray().length;
@@ -244,13 +214,11 @@ public class TableData<T> {
         }
     }
 
-
     public void addCellRange(CellRange range) {
         addCellRange(range.getFirstRow(), range.getLastRow(),
                 range.getFirstCol(), range.getLastCol());
 
     }
-
 
     public void clearCellRangeAddresses() {
 
@@ -262,11 +230,9 @@ public class TableData<T> {
         }
     }
 
-
     public void setUserCellRange(List<CellRange> userCellRange) {
         this.userSetRangeAddress = userCellRange;
     }
-
 
     public List<CellRange> getUserCellRange() {
         return userSetRangeAddress;
@@ -304,11 +270,9 @@ public class TableData<T> {
 
     }
 
-
     public OnItemClickListener getOnItemClickListener() {
         return onItemClickListener;
     }
-
 
     public void setOnItemClickListener(final OnItemClickListener onItemClickListener) {
         this.onItemClickListener = onItemClickListener;
@@ -364,7 +328,6 @@ public class TableData<T> {
         }
     }
 
-
     public void setOnRowClickListener(final OnRowClickListener<T> onRowClickListener) {
         this.onRowClickListener = onRowClickListener;
         if (this.onRowClickListener != null) {
@@ -389,7 +352,6 @@ public class TableData<T> {
         }
     }
 
-
     public void setOnColumnClickListener(final OnColumnClickListener onColumnClickListener) {
         this.onColumnClickListener = onColumnClickListener;
         if (this.onRowClickListener != null) {
@@ -402,16 +364,13 @@ public class TableData<T> {
         }
     }
 
-
     public OnRowClickListener getOnRowClickListener() {
         return onRowClickListener;
     }
 
-
     public interface OnItemClickListener<T> {
         void onClick(Column<T> column, String value, T t, int col, int row);
     }
-
 
     public interface OnRowClickListener<T> {
         void onClick(Column column, T t, int col, int row);

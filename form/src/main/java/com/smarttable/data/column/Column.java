@@ -188,9 +188,9 @@ public class Column<T> implements Comparable<Column> {
                             break;
                         }
                         Field childField;
-                        if(fields[i] != null){
+                        if (fields[i] != null){
                             childField = fields[i];
-                        }else {
+                        } else {
                             Class childClazz = child.getClass();
                             childField = childClazz.getDeclaredField(fieldNames[i]);
                             childField.setAccessible(true);

@@ -256,17 +256,9 @@ public class TableProvider<T> implements TableClickObserver {
         Rect correctCellRect;
         TableInfo tableInfo = tableData.getTableInfo();
 
-        int firstVisibleRow = 0;
-        int lastVisibleRow = 0;
-
-        if (!columns.isEmpty()) {
-            for (int j = 0; j < columns.get(0).getDatas().size(); j++) {
-                correctCellRect = gridDrawer.correctCellRect(j, 0, tempRect, config.getZoom());
-                if (correctCellRect.top < showRect.bottom) lastVisibleRow = j;
-                else if (correctCellRect.bottom < showRect.top) firstVisibleRow = j;
-                else break;
-            }
-        }
+        int[] visibility = getLastFirstVisible(tempRect, tableInfo.getZoom());
+        int firstVisibleRow = visibility[0];
+        int lastVisibleRow = visibility[1];
 
         for (int i = 0; i < columnSize; i++) {
             top = scaleRect.top;
@@ -345,6 +337,20 @@ public class TableProvider<T> implements TableClickObserver {
         if (config.isFixedCountRow()) {
             canvas.restore();
         }
+    }
+
+    private int[] getLastFirstVisible(Rect startRect, float zoom) {
+        List<Column> columns = tableData.getChildColumns();
+        Rect rect = startRect;
+        int lastVisibleRow = 0;
+        int firstVisibleRow = 0;
+        for (int j = 0; j < columns.get(0).getDatas().size(); j++) {
+            rect = gridDrawer.correctCellRect(j, 0, rect, zoom);
+            if (rect.top < showRect.bottom) lastVisibleRow = j;
+            else if (rect.bottom < showRect.top) firstVisibleRow = j;
+            else break;
+        }
+        return new int[]{firstVisibleRow, lastVisibleRow};
     }
 
 
