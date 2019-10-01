@@ -210,8 +210,7 @@ public class TableParser<T> {
                 }
             });
 
-            tableData.getT().clear();
-            tableData.getT().addAll(dataList);
+            tableData.setT(dataList);
         }
         return tableData.getColumns();
     }

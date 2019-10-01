@@ -28,7 +28,6 @@ import com.smarttable.matrix.MatrixHelper;
 import com.smarttable.utils.DensityUtils;
 
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -176,24 +175,33 @@ public class SmartTable<T> extends View implements OnTableChangeListener {
         }
     }
 
-    public void updateData(List<T> data) {
+    public void updateData(final List<T> data) {
         if (tableDataAtomic.get() == null) {
             return;
         }
-        TableData<T> tableData = tableDataAtomic.get();
-        tableData.getT().clear();
-        ((CopyOnWriteArrayList<T>)(tableData.getT())).addAllAbsent(data);
-        parser.sort(tableData);
-        for (Column childColumn : tableData.getChildColumns()) {
-            try {
-                childColumn.getDatas().clear();
-                childColumn.fillData(tableData.getT());
-            } catch (NoSuchFieldException e) {
-                e.printStackTrace();
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                synchronized (lock) {
+                    TableData<T> tableData = tableDataAtomic.get();
+                    if (tableData == null) {
+                        return;
+                    }
+                    tableData.setT(data);
+                    parser.sort(tableData);
+                    for (Column childColumn : tableData.getChildColumns()) {
+                        try {
+                            childColumn.getDatas().clear();
+                            childColumn.fillData(tableData.getT());
+                        } catch (NoSuchFieldException e) {
+                            e.printStackTrace();
+                        } catch (IllegalAccessException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
             }
-        }
+        }).start();
     }
 
     public ITableTitle getTableTitle() {
@@ -201,35 +209,45 @@ public class SmartTable<T> extends View implements OnTableChangeListener {
     }
 
     public void notifyDataChanged() {
-        final TableData<T> tableData = tableDataAtomic.get();
-        if (tableData != null) {
-            config.setPaint(paint);
-
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    synchronized (lock) {
-                        isNotifying.set(true);
-                        parser.parse(tableData);
-                        TableInfo info = measurer.measure(tableData, config);
-                        xAxis.setHeight(info.getTopHeight());
-                        yAxis.setWidth(info.getyAxisWidth());
-                        requestReMeasure();
-                        isNotifying.set(false);
-                        postInvalidate();
-                    }
-                }
-            }).start();
+        if (tableDataAtomic.get() == null) {
+            return;
         }
+        config.setPaint(paint);
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                synchronized (lock) {
+                    final TableData<T> tableData = tableDataAtomic.get();
+                    if (tableData == null) {
+                        return;
+                    }
+                    isNotifying.set(true);
+                    parser.parse(tableData);
+                    TableInfo info = measurer.measure(tableData, config);
+                    xAxis.setHeight(info.getTopHeight());
+                    yAxis.setWidth(info.getyAxisWidth());
+                    requestReMeasure();
+                    isNotifying.set(false);
+                    postInvalidate();
+                }
+            }
+        }).start();
     }
 
     public void addData(final List<T> t, final boolean isFoot) {
+        if (tableDataAtomic.get() == null) {
+            return;
+        }
         if (t != null && t.size() > 0) {
             new Thread(new Runnable() {
                 @Override
                 public void run() {
                     synchronized (lock) {
                         final TableData<T> tableData = tableDataAtomic.get();
+                        if (tableData == null) {
+                            return;
+                        }
                         isNotifying.set(true);
                         parser.addData(tableData, t, isFoot);
                         measurer.measure(tableData, config);
@@ -418,7 +436,6 @@ public class SmartTable<T> extends View implements OnTableChangeListener {
         } else {
             return matrixHelper.getZoomRect().bottom > matrixHelper.getOriginalRect().bottom;
         }
-
     }
 
     @Override
