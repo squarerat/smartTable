@@ -60,6 +60,7 @@ public class PageTableData<T> extends TableData<T> {
             }
         }
         setT(pageData);
+        updateLineSize();
     }
 
 

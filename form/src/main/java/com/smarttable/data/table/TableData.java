@@ -19,16 +19,15 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 
-
 public class TableData<T> {
 
     private String tableName;
-    private CopyOnWriteArrayList<Column> columns = new CopyOnWriteArrayList<>();
-    private CopyOnWriteArrayList<T> t = new CopyOnWriteArrayList<>();
-    private CopyOnWriteArrayList<Column> childColumns = new CopyOnWriteArrayList<>();
     private TableInfo tableInfo = new TableInfo();
-    private CopyOnWriteArrayList<ColumnInfo> columnInfos = new CopyOnWriteArrayList<>();
-    private CopyOnWriteArrayList<ColumnInfo> childColumnInfos = new CopyOnWriteArrayList<>();
+    private final CopyOnWriteArrayList<Column> columns = new CopyOnWriteArrayList<>();
+    private final CopyOnWriteArrayList<T> t = new CopyOnWriteArrayList<>();
+    private final CopyOnWriteArrayList<Column> childColumns = new CopyOnWriteArrayList<>();
+    private final CopyOnWriteArrayList<ColumnInfo> columnInfos = new CopyOnWriteArrayList<>();
+    private final CopyOnWriteArrayList<ColumnInfo> childColumnInfos = new CopyOnWriteArrayList<>();
     private Column sortColumn;
     private boolean showCount;
     private ITitleDrawFormat titleDrawFormat;
@@ -53,8 +52,8 @@ public class TableData<T> {
 
     public TableData(String tableName, List<T> t, List<Column> columns, ITitleDrawFormat titleDrawFormat) {
         this.tableName = tableName;
-        this.columns.addAllAbsent(columns);
-        this.t.addAllAbsent(t);
+        this.columns.addAll(columns);
+        this.t.addAll(t);
         tableInfo.setLineSize(t.size());
 
         this.titleDrawFormat = titleDrawFormat == null ? new TitleDrawFormat() : titleDrawFormat;
@@ -69,26 +68,39 @@ public class TableData<T> {
     }
 
     public List<Column> getColumns() {
-        return columns;
+        synchronized (columns) {
+            return columns;
+        }
     }
 
     public void setColumns(List<Column> columns) {
-        this.columns.clear();
-        this.columns.addAllAbsent(columns);
+        synchronized (this.columns) {
+            this.columns.clear();
+            this.columns.addAllAbsent(columns);
+        }
     }
 
     public List<T> getT() {
-        return t;
+        synchronized (t) {
+            return t;
+        }
     }
 
     public void setT(List<T> t) {
-        this.t.clear();
-        this.t.addAllAbsent(t);
+        synchronized (this.t) {
+            this.t.clear();
+            this.t.addAllAbsent(t);
+        }
+    }
+
+    protected void updateLineSize() {
         tableInfo.setLineSize(t.size());
     }
 
     public List<Column> getChildColumns() {
-        return childColumns;
+        synchronized (childColumns) {
+            return childColumns;
+        }
     }
 
     public TableInfo getTableInfo() {
@@ -100,26 +112,37 @@ public class TableData<T> {
     }
 
     public List<ColumnInfo> getColumnInfos() {
-        return columnInfos;
+        synchronized (columnInfos) {
+            return columnInfos;
+        }
     }
 
     public List<ColumnInfo> getChildColumnInfos() {
-        return childColumnInfos;
+        synchronized (this.childColumnInfos) {
+            return childColumnInfos;
+        }
     }
 
     public void setChildColumnInfos(List<ColumnInfo> childColumnInfos) {
-        this.childColumnInfos.clear();
-        this.childColumnInfos.addAllAbsent(childColumnInfos);
+        synchronized (this.childColumnInfos) {
+            this.childColumnInfos.clear();
+            this.childColumnInfos.addAllAbsent(childColumnInfos);
+        }
+
     }
 
     public void setColumnInfos(List<ColumnInfo> columnInfos) {
-        this.columnInfos.clear();
-        this.columnInfos.addAllAbsent(columnInfos);
+        synchronized (this.columnInfos) {
+            this.columnInfos.clear();
+            this.columnInfos.addAllAbsent(columnInfos);
+        }
     }
 
     public void setChildColumns(List<Column> childColumns) {
-        this.childColumns.clear();
-        this.childColumns.addAllAbsent(childColumns);
+        synchronized (this.childColumns) {
+            this.childColumns.clear();
+            this.childColumns.addAllAbsent(childColumns);
+        }
     }
 
     public Column getSortColumn() {
@@ -239,21 +262,11 @@ public class TableData<T> {
     }
 
     public void clear() {
-        if (t != null) {
-            t.clear();
-            t = null;
-        }
-        if (childColumns != null) {
-            childColumns.clear();
-            childColumns = null;
-        }
-        if (columns != null) {
-            columns = null;
-        }
-        if (childColumnInfos != null) {
-            childColumnInfos.clear();
-            childColumnInfos = null;
-        }
+        t.clear();
+        columns.clear();
+        columnInfos.clear();
+        childColumns.clear();
+        childColumnInfos.clear();
 
         if (userSetRangeAddress != null) {
             userSetRangeAddress.clear();
@@ -334,7 +347,7 @@ public class TableData<T> {
             setOnItemClickListener(new OnItemClickListener() {
                 @Override
                 public void onClick(Column column, String value, Object o, int col, int row) {
-                    TableData.this.onRowClickListener.onClick(column, t.get(row), col, row);
+                    TableData.this.onRowClickListener.onClick(column, getT().get(row), col, row);
                 }
             });
         }
@@ -346,7 +359,7 @@ public class TableData<T> {
             setOnItemLongClickListener(new OnItemLongClickListener() {
                 @Override
                 public void onLongClick(Column column, String value, Object o, int col, int row) {
-                    TableData.this.onRowLongClickListener.onLongClick(column, t.get(row), col, row);
+                    TableData.this.onRowLongClickListener.onLongClick(column, getT().get(row), col, row);
                 }
             });
         }
