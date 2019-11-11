@@ -34,7 +34,7 @@ public class Column<T> implements Comparable<Column> {
     private IFormat<T> format;
     private IDrawFormat<T> drawFormat;
     private String fieldName;
-    private List<T> datas;
+    private final List<T> datas = new ArrayList<>();
     private boolean isFixed;
     private int computeWidth;
     private int level;
@@ -86,7 +86,6 @@ public class Column<T> implements Comparable<Column> {
         this.format = format;
         this.fieldName = fieldName;
         this.drawFormat =drawFormat;
-        datas = new ArrayList<>();
     }
 
     public String getColumnName() {
@@ -137,11 +136,16 @@ public class Column<T> implements Comparable<Column> {
     }
 
     public List<T> getDatas() {
-        return datas;
+        synchronized (datas) {
+            return datas;
+        }
     }
 
     public void setDatas(List<T> datas) {
-        this.datas = datas;
+        synchronized (this.datas) {
+            this.datas.clear();
+            this.datas.addAll(datas);
+        }
     }
 
     public T getData(Object o) throws NoSuchFieldException, IllegalAccessException {
@@ -171,45 +175,48 @@ public class Column<T> implements Comparable<Column> {
     }
 
     public void fillData(List<Object> objects) throws NoSuchFieldException, IllegalAccessException {
-        if(countFormat != null){
-            countFormat.clearCount();
-        }
-        if (objects.size() > 0) {
-            String[] fieldNames = fieldName.split("\\.");
-            if (fieldNames.length>  0) {
-                Field[] fields = new Field[fieldNames.length];
-                int size = objects.size();
-                for (int k = 0; k < size; k++) {
-                    Object child= objects.get(k);
-                    for (int i = 0; i < fieldNames.length; i++) {
-                        if (child == null) {
-                            addData(null,true);
-                            countColumnValue(null);
-                            break;
+        synchronized (datas) {
+            datas.clear();
+            if (countFormat != null) {
+                countFormat.clearCount();
+            }
+            if (objects.size() > 0) {
+                String[] fieldNames = fieldName.split("\\.");
+                if (fieldNames.length > 0) {
+                    Field[] fields = new Field[fieldNames.length];
+                    int size = objects.size();
+                    for (int k = 0; k < size; k++) {
+                        Object child = objects.get(k);
+                        for (int i = 0; i < fieldNames.length; i++) {
+                            if (child == null) {
+                                addData(null, true);
+                                countColumnValue(null);
+                                break;
+                            }
+                            Field childField;
+                            if (fields[i] != null) {
+                                childField = fields[i];
+                            } else {
+                                Class childClazz = child.getClass();
+                                childField = childClazz.getDeclaredField(fieldNames[i]);
+                                childField.setAccessible(true);
+                                fields[i] = childField;
+                            }
+                            if (childField == null) {
+                                addData(null, true);
+                                countColumnValue(null);
+                                break;
+                            }
+                            if (i == fieldNames.length - 1) {
+                                T t = (T) childField.get(child);
+                                addData(t, true);
+                                countColumnValue(t);
+                            } else {
+                                child = childField.get(child);
+                            }
                         }
-                        Field childField;
-                        if (fields[i] != null){
-                            childField = fields[i];
-                        } else {
-                            Class childClazz = child.getClass();
-                            childField = childClazz.getDeclaredField(fieldNames[i]);
-                            childField.setAccessible(true);
-                            fields[i] = childField;
-                        }
-                        if (childField == null) {
-                            addData(null,true);
-                            countColumnValue(null);
-                            break;
-                        }
-                        if (i == fieldNames.length - 1) {
-                            T t = (T) childField.get(child);
-                            addData(t, true);
-                            countColumnValue(t);
-                        } else {
-                            child = childField.get(child);
-                        }
-                    }
 
+                    }
                 }
             }
         }
@@ -261,7 +268,7 @@ public class Column<T> implements Comparable<Column> {
     }
 
     public List<int[]> parseRanges(){
-        if(isAutoMerge && maxMergeCount> 1 &&datas != null) {
+        if(isAutoMerge && maxMergeCount> 1) {
             if(ranges != null){
                 ranges.clear();
             }else{
@@ -328,10 +335,12 @@ public class Column<T> implements Comparable<Column> {
     }
 
     protected void addData(T t,boolean isFoot){
-        if(isFoot) {
-            datas.add(t);
-        }else {
-            datas.add(0,t);
+        synchronized (datas) {
+            if (isFoot) {
+                datas.add(t);
+            } else {
+                datas.add(0, t);
+            }
         }
     }
 
