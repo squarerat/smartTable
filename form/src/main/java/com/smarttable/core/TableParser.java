@@ -34,7 +34,6 @@ public class TableParser<T> {
                 List<T> dataList = tableData.getT();
                 int i = 0;
                 for (Column column : tableData.getChildColumns()) {
-                    column.getDatas().clear();
                     column.fillData(dataList);
                     List<int[]> ranges = column.parseRanges();
                     if (ranges != null && ranges.size() > 0) {

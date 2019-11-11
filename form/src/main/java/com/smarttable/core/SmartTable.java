@@ -191,7 +191,6 @@ public class SmartTable<T> extends View implements OnTableChangeListener {
                     parser.sort(tableData);
                     for (Column childColumn : tableData.getChildColumns()) {
                         try {
-                            childColumn.getDatas().clear();
                             childColumn.fillData(tableData.getT());
                         } catch (NoSuchFieldException e) {
                             e.printStackTrace();
@@ -199,6 +198,7 @@ public class SmartTable<T> extends View implements OnTableChangeListener {
                             e.printStackTrace();
                         }
                     }
+                    postInvalidate();
                 }
             }
         }).start();
